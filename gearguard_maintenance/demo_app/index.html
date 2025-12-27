@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GearGuard Login</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>GearGuard Maintenance Dashboard</h1>
+    <p>Created by Supraja Maddukuri</p>
+
+    <!-- Login Box -->
+    <div id="login-box">
+        <h2>Login</h2>
+        <input type="text" id="login-username" placeholder="Username">
+        <input type="password" id="login-password" placeholder="Password">
+        <button onclick="login()">Login</button>
+        <p>Don't have an account? <a href="#" onclick="toggleAuth()">Sign up</a></p>
+        <p>Or use preloaded credentials: <br> supraja/password123, alice/alice123, bob/bob123, charlie/charlie123</p>
+    </div>
+
+    <!-- Signup Box -->
+    <div id="signup-box" style="display:none">
+        <h2>Sign Up</h2>
+        <input type="text" id="signup-username" placeholder="Choose Username">
+        <input type="password" id="signup-password" placeholder="Choose Password">
+        <button onclick="signup()">Create Account</button>
+        <p>Already have an account? <a href="#" onclick="toggleAuth()">Login</a></p>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

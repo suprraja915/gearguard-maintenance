@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GearGuard Dashboard</title>
+<style>
+body { font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin:0; background:#f4f4f4; }
+header { background: linear-gradient(90deg,#4DB9FF,#1A8CFF); color:white; padding:1rem 2rem; display:flex; justify-content:space-between; align-items:center; font-weight:bold; box-shadow:0 2px 5px rgba(0,0,0,0.2); position:sticky; top:0; z-index:100; }
+header .logo { display:flex; align-items:center; gap:0.5rem; }
+header .logo img { width:40px; height:40px; border-radius:50%; }
+header .tagline { font-size:0.9rem; font-weight:normal; color:#f0f0f0; }
+nav { display:flex; gap:1rem; margin:1rem 2rem; flex-wrap:wrap; }
+nav button { padding:0.5rem 1rem; border:none; border-radius:5px; background:#4DB9FF; color:white; cursor:pointer; transition:0.2s; }
+nav button:hover { background:#1A8CFF; }
+.container { padding:1rem 2rem; }
+.section { display:none; }
+.kanban { display:flex; gap:1rem; flex-wrap:wrap; }
+.column { background:#fff; flex:1; min-width:220px; padding:0.5rem; border-radius:8px; box-shadow:0 0 5px rgba(0,0,0,0.1); max-height:600px; overflow-y:auto; }
+.column h3 { text-align:center; background:#D2D3C7; margin:0 -0.5rem 0.5rem -0.5rem; padding:0.5rem; border-radius:8px 8px 0 0; }
+.card { display:flex; align-items:center; justify-content:space-between; padding:0.5rem; margin-bottom:0.5rem; border-radius:5px; background:#eaeaea; cursor:pointer; transition:all 0.3s ease; }
+.card:hover { transform:scale(1.03); box-shadow:0 5px 15px rgba(0,0,0,0.2); }
+.card img.avatar { width:30px; height:30px; border-radius:50%; margin-right:0.5rem; border:2px solid #4DB9FF; }
+.badge { padding:0.2rem 0.5rem; border-radius:4px; font-size:0.8rem; font-weight:bold; color:white; }
+.badge.new { background:#FF3131; }
+.badge.progress { background:#FFA500; }
+.badge.repaired { background:#4DB9FF; }
+.badge.scrap { background:#555; }
+.selectors, .filters { display:flex; gap:1rem; margin-bottom:1rem; flex-wrap:wrap; }
+select, input, button, textarea { padding:0.5rem; font-size:1rem; border-radius:5px; border:1px solid #ccc; outline:none; transition:all 0.2s ease; }
+select:focus, input:focus, textarea:focus { border-color:#4DB9FF; }
+button { background:#B40037; color:white; border:none; cursor:pointer; transition:all 0.2s ease; }
+button:hover { background:#FF3131; }
+table { width:100%; border-collapse:collapse; margin-top:1rem; }
+table, th, td { border:1px solid #ccc; }
+th, td { padding:0.5rem; text-align:left; }
+footer { text-align:center; padding:0.5rem; background:#D2D3C7; margin-top:1rem; border-radius:8px; }
+@media (max-width:768px) { .kanban { flex-direction:column; } .selectors, .filters, nav { flex-direction:column; gap:0.5rem; } }
+</style>
+</head>
+<body>
+
+<header>
+    <div class="logo">
+        <img src="https://cdn-icons-png.flaticon.com/512/2331/2331949.png" alt="Logo">
+        GearGuard
+    </div>
+    <div class="tagline">Created by Supraja Maddukuri</div>
+</header>
+
+<nav>
+    <button onclick="showSection('kanban-section')">Maintenance Dashboard</button>
+    <button onclick="showSection('equipment-section')">Equipment</button>
+    <button onclick="showSection('teams-section')">Teams</button>
+    <button onclick="showSection('calendar-section')">Maintenance Calendar</button>
+</nav>
+
+<div class="container">
+    <!-- Kanban Section -->
+    <div id="kanban-section" class="section">
+        <div class="selectors">
+            <label>Type:
+                <select id="type-select" onchange="toggleWorkCenter()">
+                    <option value="equipment">Equipment</option>
+                    <option value="workcenter">Work Center</option>
+                </select>
+            </label>
+            <label id="equipment-field">Equipment:
+                <select id="equipment-select"></select>
+            </label>
+            <label id="workcenter-field" style="display:none;">Work Center:
+                <select id="workcenter-select"></select>
+            </label>
+            <label>Assign Technician:
+                <select id="assign-tech"></select>
+            </label>
+            <button onclick="createRequest()">Create Request</button>
+        </div>
+
+        <div class="filters">
+            <label>Filter Team:
+                <select id="filter-team" onchange="filterCards()">
+                    <option value="all">All</option>
+                </select>
+            </label>
+            <label>Filter Type:
+                <select id="filter-type" onchange="filterCards()">
+                    <option value="all">All</option>
+                    <option value="equipment">Equipment</option>
+                    <option value="workcenter">Work Center</option>
+                </select>
+            </label>
+        </div>
+
+        <div class="kanban">
+            <div class="column" id="new" ondrop="drop(event)" ondragover="allowDrop(event)"><h3>New</h3></div>
+            <div class="column" id="in-progress" ondrop="drop(event)" ondragover="allowDrop(event)"><h3>In Progress</h3></div>
+            <div class="column" id="repaired" ondrop="drop(event)" ondragover="allowDrop(event)"><h3>Repaired</h3></div>
+            <div class="column" id="scrap" ondrop="drop(event)" ondragover="allowDrop(event)"><h3>Scrap</h3></div>
+        </div>
+    </div>
+
+    <!-- Equipment Section -->
+    <div id="equipment-section" class="section">
+        <h2>Equipment Details</h2>
+        <form id="equipment-form" onsubmit="event.preventDefault(); addEquipment();">
+            <input type="text" id="equip-name" placeholder="Equipment Name" required>
+            <input type="text" id="equip-category" placeholder="Category">
+            <input type="text" id="equip-company" placeholder="Company">
+            <input type="text" id="equip-location" placeholder="Location">
+            <select id="equip-tech"></select>
+            <textarea id="equip-desc" placeholder="Description"></textarea>
+            <button type="submit">Add Equipment</button>
+        </form>
+        <table id="equipment-table">
+            <thead><tr><th>Name</th><th>Category</th><th>Company</th><th>Location</th><th>Technician</th><th>Description</th><th>Action</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <!-- Teams Section -->
+    <div id="teams-section" class="section">
+        <h2>Maintenance Teams</h2>
+        <form id="team-form" onsubmit="event.preventDefault(); addTeam();">
+            <input type="text" id="team-name" placeholder="Team Name" required>
+            <input type="text" id="team-members" placeholder="Members (comma separated)">
+            <input type="text" id="team-company" placeholder="Company">
+            <button type="submit">Add Team</button>
+        </form>
+        <table id="teams-table">
+            <thead><tr><th>Name</th><th>Members</th><th>Company</th><th>Action</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <!-- Calendar Section -->
+    <div id="calendar-section" class="section">
+        <h2>Maintenance Calendar</h2>
+        <form id="calendar-form" onsubmit="event.preventDefault(); addCalendar();">
+            <input type="text" id="cal-item" placeholder="Item Name" required>
+            <input type="text" id="cal-type" placeholder="Type">
+            <input type="text" id="cal-team" placeholder="Team">
+            <input type="text" id="cal-tech" placeholder="Technician">
+            <input type="date" id="cal-date">
+            <textarea id="cal-notes" placeholder="Notes"></textarea>
+            <button type="submit">Add Calendar Entry</button>
+        </form>
+        <table id="calendar-table">
+            <thead><tr><th>Item</th><th>Type</th><th>Team</th><th>Technician</th><th>Date</th><th>Notes</th><th>Action</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+<footer>&copy; 2025 GearGuard Dashboard | Created by Supraja Maddukuri</footer>
+
+<script src="script.js"></script>
+<script>
+showSection('kanban-section');
+</script>
+</body>
+</html>
